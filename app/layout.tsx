@@ -5,6 +5,8 @@ import SessionProvider from "../components/SessionProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+import Head from "@/components/head";
+import Foot from "@/components/foot";
 
 export const metadata = {
   title: "Create Next App",
@@ -22,7 +24,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <Head />
         <SessionProvider session={session}>{children}</SessionProvider>
+        <Foot />
       </body>
     </html>
   );

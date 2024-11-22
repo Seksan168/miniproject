@@ -38,7 +38,10 @@ export default function Head() {
           </button>
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
-          <a href="#" className="text-sm/6 font-semibold text-gray-900">
+          <a
+            href="/management"
+            className="text-sm/6 font-semibold text-gray-900"
+          >
             Features
           </a>
           <a href="#" className="text-sm/6 font-semibold text-gray-900">
