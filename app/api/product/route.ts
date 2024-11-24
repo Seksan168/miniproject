@@ -17,9 +17,9 @@ export async function GET() {
 // POST handler
 export async function POST(req: Request) {
   try {
-    const { name, price, image_url } = await req.json();
+    const { name, price, image_url, remaining } = await req.json();
     const newProduct = await prisma.product.create({
-      data: { name, price, image_url },
+      data: { name, price, image_url, remaining },
     });
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {
@@ -33,10 +33,10 @@ export async function POST(req: Request) {
 // PUT handler
 export async function PUT(req: Request) {
   try {
-    const { id, name, price, image_url } = await req.json();
+    const { id, name, price, image_url, remaining } = await req.json();
     const updatedProduct = await prisma.product.update({
       where: { id },
-      data: { name, price, image_url },
+      data: { name, price, image_url, remaining },
     });
     return NextResponse.json(updatedProduct);
   } catch (error) {

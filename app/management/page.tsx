@@ -7,6 +7,7 @@ interface Product {
   name: string;
   price: number;
   image_url: string;
+  remaining: number;
   like?: number;
   is_new?: boolean;
 }
@@ -15,6 +16,7 @@ export default function Page() {
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
+  const [remaining, setRemaining] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
   const [editID, setEditID] = useState<number | null>(null);
 
@@ -72,6 +74,7 @@ export default function Page() {
       setEditID(null);
       setName("");
       setPrice(0);
+      setRemaining(0);
       setImageUrl("");
     } catch (error) {
       console.error(error);
@@ -139,6 +142,17 @@ export default function Page() {
             </label>
           </div>
           <div>
+            <label>
+              Remaining in stock:
+              <input
+                type="text"
+                value={remaining}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="mt-1 block rounded border-gray-300 text-sm"
+              />
+            </label>
+          </div>
+          <div>
             {editID ? (
               <button
                 onClick={updateProduct}
@@ -170,6 +184,9 @@ export default function Page() {
               />
               <h3 className="mt-2 text-lg font-bold">{product.name}</h3>
               <p className="text-gray-700">Price: ${product.price}</p>
+              <p className="text-gray-700">
+                Remaining in stock: {product.remaining} items
+              </p>
               <div className="mt-4 flex justify-between">
                 <button
                   onClick={() => editProduct(product.id)}

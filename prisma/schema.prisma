@@ -27,6 +27,7 @@ model Product {
   name      String
   price     Float
   image_url String
+  remaining Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
