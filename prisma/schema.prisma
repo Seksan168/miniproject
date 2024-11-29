@@ -21,13 +21,41 @@ model User {
   role      String   @default("member") // Add a role field
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  cart Cart?
 }
 model Product {
   id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   name      String
   price     Float
   image_url String
   remaining Int      @default(1)
+
+  carts CartProduct[]
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user_id   Int @unique
+  user User  @relation(fields: [user_id], references: [id])
+
+  products CartProduct[]
+}
+
+model CartProduct {
+  cart_id   Int
+  cart Cart @relation(fields: [cart_id], references: [id])
+
+  product_id Int
+  product Product @relation(fields: [product_id], references: [id])
+
+  quantity   Int @default(1)
+
+  @@unique([cart_id, product_id])
 }

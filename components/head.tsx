@@ -44,7 +44,10 @@ export default function Head() {
           >
             Features
           </a>
-          <a href="#" className="text-sm/6 font-semibold text-gray-900">
+          <a
+            href="maketplace"
+            className="text-sm/6 font-semibold text-gray-900"
+          >
             Marketplace
           </a>
           <a href="#" className="text-sm/6 font-semibold text-gray-900">

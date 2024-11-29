@@ -62,3 +62,8 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+await prisma.user.findUnique({
+  where: { id: 1 },
+  include: { cart: { include: { products: { include: { product: true } } } } },
+});

@@ -32,7 +32,18 @@ export default function Page() {
         return;
       }
 
-      // Redirect to dashboard or another page after successful sign-in
+      // If login is successful, handle "Remember Me" logic
+      if (rememberMe) {
+        // Save user data to localStorage (you can save more data as needed)
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("email", formData.email); // Save email or other identifiers
+      } else {
+        // Optionally, clear the login data from localStorage if "Remember Me" is unchecked
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("email");
+      }
+
+      // Redirect to profile after successful sign-in
       router.push("/profile");
     } catch (err) {
       console.error("An error occurred:", err);

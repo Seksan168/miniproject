@@ -8,8 +8,6 @@ interface Product {
   price: number;
   image_url: string;
   remaining: number;
-  like?: number;
-  is_new?: boolean;
 }
 
 export default function Page() {

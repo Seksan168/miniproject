@@ -8,8 +8,6 @@ interface Product {
   price: number;
   image_url: string;
   remaining: number;
-  like?: number;
-  is_new?: boolean;
 }
 
 export default function Page() {
@@ -147,7 +145,7 @@ export default function Page() {
               <input
                 type="text"
                 value={remaining}
-                onChange={(e) => setImageUrl(e.target.value)}
+                onChange={(e) => setRemaining(Number(e.target.value))}
                 className="mt-1 block rounded border-gray-300 text-sm"
               />
             </label>
