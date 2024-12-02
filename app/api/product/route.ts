@@ -63,7 +63,15 @@ export async function DELETE(req: Request) {
   }
 }
 
-await prisma.user.findUnique({
-  where: { id: 1 },
-  include: { cart: { include: { products: { include: { product: true } } } } },
-});
+// Example usage of prisma.user.findUnique inside an async function
+async function exampleUsage() {
+  const user = await prisma.user.findUnique({
+    where: { id: 1 },
+    include: {
+      cart: { include: { products: { include: { product: true } } } },
+    },
+  });
+  console.log(user);
+}
+
+exampleUsage();

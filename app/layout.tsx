@@ -1,12 +1,11 @@
 import { Inter } from "next/font/google";
 import { getServerSession } from "next-auth";
-
 import SessionProvider from "../components/SessionProvider";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 import Head from "@/components/head";
 import Foot from "@/components/foot";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Create Next App",
@@ -20,14 +19,30 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const session = await getServerSession();
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Head />
-        <SessionProvider session={session}>{children}</SessionProvider>
-        <Foot />
-      </body>
-    </html>
-  );
+  try {
+    // Fetch session on the server side
+    const session = await getServerSession();
+
+    return (
+      <html lang="en">
+        <body className={inter.className}>
+          <Head />
+          {/* Wrapping children with SessionProvider to manage session */}
+          <SessionProvider session={session}>{children}</SessionProvider>
+          <Foot />
+        </body>
+      </html>
+    );
+  } catch (error) {
+    console.error("Error fetching session:", error);
+    return (
+      <html lang="en">
+        <body className={inter.className}>
+          <Head />
+          <SessionProvider session={null}>{children}</SessionProvider>
+          <Foot />
+        </body>
+      </html>
+    );
+  }
 }

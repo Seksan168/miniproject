@@ -8,8 +8,16 @@ export async function middleware(request: NextRequest) {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  console.log(user);
-
+  console.log("User Data", user);
+  if (user) {
+    const response = NextResponse.next();
+    response.cookies.set("user", JSON.stringify(user), {
+      httpOnly: true,
+      path: "/",
+    });
+    return response;
+  }
+  // localStorage.setItem("user", JSON.stringify(user));
   // Get the pathname of the request
   const { pathname } = request.nextUrl;
 

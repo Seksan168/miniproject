@@ -13,7 +13,14 @@ export default function Profile() {
     if (status === "unauthenticated") {
       router.push("/");
     }
-  }, [status, router]);
+    if (status === "authenticated" && session?.user?.id) {
+      localStorage.setItem("userId", session.user.id);
+      localStorage.setItem("userName", session.user.name);
+    }
+    return () => {
+      localStorage.removeItem("userId");
+    };
+  }, [status, session, router]);
 
   // When after loading success and have session, show profile
   return (
@@ -26,6 +33,7 @@ export default function Profile() {
           </p>
           <p>Email: {session.user.email}</p>
           <p>Role: {session.user.role}</p>
+          <p>ID: {session.user.id}</p>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="w-full bg-blue-500 text-white py-2 rounded"

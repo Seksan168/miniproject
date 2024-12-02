@@ -12,6 +12,15 @@ interface Product {
 
 export default function Page() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [myId, setMyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("userId");
+      setMyId(userId);
+      console.log("myId", userId);
+    }
+  }, []);
 
   // Fetch products on component load
   useEffect(() => {
@@ -30,6 +39,35 @@ export default function Page() {
     }
   }
 
+  // Handle adding product to cart
+  async function handleAddToCart(productId: number) {
+    console.log("payload", productId);
+
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: myId,
+          productId,
+          quantity: 1, // You can make this dynamic if you want a quantity input
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add product to cart");
+      }
+
+      // Handle success (e.g., show a success message or update the UI)
+      const data = await response.json();
+      alert(`Product added to cart: ${data.id}`); // You can show a toast or update cart count here
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    }
+  }
+
   return (
     <>
       <section>
@@ -42,10 +80,10 @@ export default function Page() {
               Explore our exclusive product collection and find what you need.
             </p>
           </header>
+
           {/* Sorting and Filters */}
           <div className="mt-12">
             <div className="flex flex-col lg:flex-row items-center lg:justify-between">
-              {/* Sorting */}
               <div className="mb-4 lg:mb-0">
                 <label
                   htmlFor="SortBy"
@@ -69,6 +107,7 @@ export default function Page() {
                   Filters
                 </p>
                 <div className="flex flex-wrap gap-4">
+                  {/* Availability Filters */}
                   <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
                     <summary className="flex cursor-pointer items-center justify-between gap-2 p-4 text-gray-900 transition">
                       <span className="text-sm font-medium">Availability</span>
@@ -116,6 +155,8 @@ export default function Page() {
                       </ul>
                     </div>
                   </details>
+
+                  {/* Price Filters */}
                   <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
                     <summary className="flex cursor-pointer items-center justify-between gap-2 p-4 text-gray-900 transition">
                       <span className="text-sm font-medium">Price</span>
@@ -180,6 +221,7 @@ export default function Page() {
                       <p className="text-gray-500">Price: ${product.price}</p>
                       <button
                         type="button"
+                        onClick={() => handleAddToCart(product.id)}
                         className="mt-4 w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
                       >
                         Add to Cart

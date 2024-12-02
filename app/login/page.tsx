@@ -25,6 +25,7 @@ export default function Page() {
         email: formData.email,
         password: formData.password,
       });
+      console.log("hello", result);
 
       if (result?.error) {
         setError(result.error);
@@ -37,6 +38,7 @@ export default function Page() {
         // Save user data to localStorage (you can save more data as needed)
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("email", formData.email); // Save email or other identifiers
+        // localStorage.setItem("userid", result?.); // Save email or other identifiers
       } else {
         // Optionally, clear the login data from localStorage if "Remember Me" is unchecked
         localStorage.removeItem("isLoggedIn");
