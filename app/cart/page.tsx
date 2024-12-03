@@ -1,159 +1,188 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+
+// Type definition for cart items
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+  quantity: number;
+}
 export default function Page() {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [editID, setEditID] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch cart items from the API
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await fetch("/api/cart");
+        if (response.ok) {
+          const data: CartItem[] = await response.json();
+          setCartItems(data);
+        }
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, []);
+
+  // Handle quantity change
+  const handleQuantityChange = async (itemId: number, newQuantity: number) => {
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+      if (response.ok) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === itemId ? { ...item, quantity: newQuantity } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  // Handle item removal
+  const handleRemoveItem = async (itemId: number) => {
+    try {
+      const response = await fetch(`/api/cart/${itemId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setCartItems((prevItems) =>
+          prevItems.filter((item) => item.id !== itemId)
+        );
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
-      <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-          Shopping Cart
-        </h2>
+    <div>
+      <section>
+        <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+          <div className="mx-auto max-w-3xl">
+            <header className="text-center">
+              <h1 className="text-xl font-bold text-gray-900 sm:text-3xl">
+                Your Cart
+              </h1>
+            </header>
 
-        <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
-          <div className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
-            <div className="space-y-6">
-              <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
-                <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                  <a href="#" className="shrink-0 md:order-1">
+            <div className="mt-8">
+              <ul className="space-y-4">
+                {cartItems.map((cartItem) => (
+                  <li key={cartItem.id} className="flex items-center gap-4">
                     <img
-                      className="h-20 w-20 dark:hidden"
-                      src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"
-                      alt="imac image"
+                      src={cartItem.image_url}
+                      alt={cartItem.name}
+                      className="size-16 rounded object-cover"
                     />
-                    <img
-                      className="hidden h-20 w-20 dark:block"
-                      src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg"
-                      alt="imac image"
-                    />
-                  </a>
 
-                  <label htmlFor="counter-input" className="sr-only">
-                    Choose quantity:
-                  </label>
-                  <div className="flex items-center justify-between md:order-3 md:justify-end">
-                    <div className="flex items-center">
+                    <div>
+                      <h3 className="text-sm text-gray-900">{cartItem.name}</h3>
+                      <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">
+                        <div>
+                          <dt className="inline">Price:</dt>
+                          <dd className="inline">£{cartItem.price}</dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    <div className="flex flex-1 items-center justify-end gap-2">
+                      <form>
+                        <label
+                          htmlFor={`Line${cartItem.id}Qty`}
+                          className="sr-only"
+                        >
+                          Quantity
+                        </label>
+
+                        <input
+                          type="number"
+                          min="1"
+                          value={cartItem.quantity}
+                          id={`Line${cartItem.id}Qty`}
+                          onChange={(e) =>
+                            handleQuantityChange(
+                              cartItem.id,
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                        />
+                      </form>
+
                       <button
-                        type="button"
-                        id="decrement-button"
-                        data-input-counter-decrement="counter-input"
-                        className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                        onClick={() => handleRemoveItem(cartItem.id)}
+                        className="text-gray-600 transition hover:text-red-600"
                       >
+                        <span className="sr-only">Remove item</span>
                         <svg
-                          className="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                          aria-hidden="true"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
-                          viewBox="0 0 18 2"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="size-4"
                         >
                           <path
-                            stroke="currentColor"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M1 1h16"
-                          />
-                        </svg>
-                      </button>
-                      <input
-                        type="text"
-                        id="counter-input"
-                        data-input-counter
-                        className="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
-                        placeholder=""
-                        value="2"
-                        required
-                      />
-                      <button
-                        type="button"
-                        id="increment-button"
-                        data-input-counter-increment="counter-input"
-                        className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
-                      >
-                        <svg
-                          className="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 18 18"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 1v16M1 9h16"
+                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
                           />
                         </svg>
                       </button>
                     </div>
-                    <div className="text-end md:order-4 md:w-32">
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
-                        $1,499
-                      </p>
-                    </div>
-                  </div>
+                  </li>
+                ))}
+              </ul>
 
-                  <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
+              <div className="mt-8 flex justify-end border-t border-gray-100 pt-8">
+                <div className="w-screen max-w-lg space-y-4">
+                  <dl className="space-y-0.5 text-sm text-gray-700">
+                    <div className="flex justify-between !text-base font-medium">
+                      <dt>Total</dt>
+                      <dd>£{totalPrice}</dd>
+                    </div>
+                  </dl>
+
+                  <div className="flex justify-end">
                     <a
                       href="#"
-                      className="text-base font-medium text-gray-900 hover:underline dark:text-white"
+                      className="block rounded bg-gray-700 px-5 py-3 text-sm text-gray-100 transition hover:bg-gray-600"
                     >
-                      PC system All in One APPLE iMac (2023)
+                      Checkout
                     </a>
-                    <div className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white"
-                      >
-                        <svg
-                          className="me-1.5 h-5 w-5"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12.01 6.001C6.5 1 1 8 5.782 13.001L12.011 20l6.23-7C23 8 17.5 1 12.01 6.002Z"
-                          />
-                        </svg>
-                        Add to Favorites
-                      </button>
-
-                      <button
-                        type="button"
-                        className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
-                      >
-                        <svg
-                          className="me-1.5 h-5 w-5"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18 17.94 6M18 18 6.06 6"
-                          />
-                        </svg>
-                        Remove
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
-              {/* Repeat similar structure for additional products */}
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

@@ -45,13 +45,13 @@ export default function Head() {
             Features
           </a>
           <a
-            href="maketplace"
+            href="/maketplace"
             className="text-sm/6 font-semibold text-gray-900"
           >
             Marketplace
           </a>
-          <a href="#" className="text-sm/6 font-semibold text-gray-900">
-            Company
+          <a href="/cart" className="text-sm/6 font-semibold text-gray-900">
+            Cart
           </a>
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">

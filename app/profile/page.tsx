@@ -6,21 +6,33 @@ import { useEffect } from "react";
 
 export default function Profile() {
   const { data: session, status } = useSession();
-
   const router = useRouter();
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/");
+      router.push("/"); // Redirect to homepage when unauthenticated
     }
+
+    // When authenticated and session exists, store user details in localStorage
     if (status === "authenticated" && session?.user?.id) {
       localStorage.setItem("userId", session.user.id);
       localStorage.setItem("userName", session.user.name);
     }
+
+    // Cleanup: Remove user details from localStorage when session changes or on logout
     return () => {
       localStorage.removeItem("userId");
+      localStorage.removeItem("userName");
     };
   }, [status, session, router]);
+
+  // Handle logout
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" }); // Redirect to homepage after logout
+    // Optionally, clear localStorage immediately after sign-out
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+  };
 
   // When after loading success and have session, show profile
   return (
@@ -35,7 +47,7 @@ export default function Profile() {
           <p>Role: {session.user.role}</p>
           <p>ID: {session.user.id}</p>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={handleLogout}
             className="w-full bg-blue-500 text-white py-2 rounded"
           >
             Logout
