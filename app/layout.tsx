@@ -4,6 +4,7 @@ import SessionProvider from "../components/SessionProvider";
 import "./globals.css";
 import Head from "@/components/head";
 import Foot from "@/components/foot";
+import { Toaster, toast } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +27,7 @@ export default async function RootLayout({
     return (
       <html lang="en">
         <body className={inter.className}>
+          <Toaster position="top-right" richColors />
           <Head />
           {/* Wrapping children with SessionProvider to manage session */}
           <SessionProvider session={session}>{children}</SessionProvider>

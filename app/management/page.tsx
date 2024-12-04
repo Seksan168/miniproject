@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { z } from "zod";
+import { toast } from "sonner";
 
 // Define the validation schema for product data
 const productSchema = z.object({
@@ -42,7 +43,7 @@ export default function Page() {
       const data: Product[] = await response.json();
       setProducts(data);
     } catch (error) {
-      console.error(error);
+      toast.error("Failed to fetch products");
     }
   }
 
@@ -73,7 +74,7 @@ export default function Page() {
       setPrice(0);
       setImageUrl("");
       setRemaining(0);
-      setErrors([]); // Clear errors after successful submission
+      setErrors([]);
     } catch (error) {
       console.error(error);
     }
@@ -118,7 +119,8 @@ export default function Page() {
           remaining, // Add remaining here
         }),
       });
-      if (!response.ok) throw new Error("Failed to update product");
+      if (!response.ok) toast.error("Failed to update product");
+      throw new Error("Failed to update product");
       await fetchProducts();
       setEditID(null);
       setName("");
@@ -127,7 +129,7 @@ export default function Page() {
       setImageUrl("");
       setErrors([]); // Clear errors after successful submission
     } catch (error) {
-      console.error(error);
+      toast.error("Failed to update product");
     }
   }
 
@@ -141,7 +143,7 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to delete product");
       await fetchProducts();
     } catch (error) {
-      console.error(error);
+      toast.error("Failed to delete product");
     }
   }
 

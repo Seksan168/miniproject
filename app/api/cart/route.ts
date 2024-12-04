@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/utils/db";
-
-// GET handler
-// export async function GET(req: Request) {
-//   try {
-//     const userId = await req.json();
-//     const carts = await prisma.cart.findMany({ where: { user_id: userId } });
-//     return NextResponse.json(carts);
-//   } catch (error) {
-//     return NextResponse.json(
-//       { error: "Failed to fetch products" },
-//       { status: 500 }
-//     );
-//   }
-// }
+import { error } from "console";
+import { toast } from "sonner";
 export async function GET(req: Request) {
   try {
     // Parse the URL and get the userId from query parameters
@@ -145,53 +133,130 @@ export async function POST(req: Request) {
   }
 }
 
-// PUT handler - Update Item Quantity
-const handleChange = async (
-  cartId: number,
-  productId: number,
-  newQuantity: number
-) => {
+export async function PATCH(req: Request) {
   try {
-    const response = await fetch("/api/cart", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
+    const { userId, productId, quantity } = await req.json();
+    // toast.success("Item updated in cart");
+
+    // Ensure the user exists
+    const cart = await prisma.cart.findFirst({
+      where: { user_id: userId },
+      include: {
+        products: true, // Include products in the cart to check if the product exists
       },
-      body: JSON.stringify({
-        cartId,
-        productId,
-        quantity: newQuantity,
-      }),
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to update quantity");
+    if (!cart) {
+      throw new Error("Cart not found for the given user.");
     }
 
-    const updatedItem = await response.json();
-    console.log("Updated item:", updatedItem);
+    // Check if the product exists in the cart
+    const existingCartItem = await prisma.cartProduct.findFirst({
+      where: {
+        cart_id: cart.id,
+        product_id: productId,
+      },
+    });
+
+    if (!existingCartItem) {
+      throw new Error("Product not found in the cart.");
+    }
+
+    // Update the quantity of the product in the cartProduct table
+    const updatedCartItem = await prisma.cartProduct.update({
+      where: {
+        cart_id_product_id: {
+          cart_id: cart.id,
+          product_id: productId,
+        },
+      },
+      data: {
+        quantity, // Set the new quantity
+      },
+    });
+
+    // Optionally, adjust stock in the product model
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (product) {
+      // Adjust stock if necessary, or add other logic
+      await prisma.product.update({
+        where: { id: productId },
+        data: {
+          remaining: product.remaining - (quantity - existingCartItem.quantity),
+        },
+      });
+    }
+
+    return NextResponse.json(updatedCartItem);
   } catch (error) {
-    console.error("Error updating item:", error);
+    return NextResponse.json(
+      { error: (error as Error).message || "Failed to update quantity" },
+      { status: 500 }
+    );
   }
-};
+}
 
 // DELETE handler - Remove Item from Cart
 export async function DELETE(req: Request) {
   try {
+    // Parse the request body to extract cartId and productId
     const { cartId, productId } = await req.json();
-    // Delete the specific CartProduct item by cartId and productId
+
+    // Ensure the cart and product exist
+    const cart = await prisma.cart.findUnique({
+      where: { id: cartId },
+      include: {
+        products: true, // Optional: Include products to verify the product exists in the cart
+      },
+    });
+
+    if (!cart) {
+      throw new Error("Cart not found.");
+    }
+
+    // Check if the product exists in the cart
+    const existingCartItem = await prisma.cartProduct.findFirst({
+      where: {
+        cart_id: cart.id,
+        product_id: productId,
+      },
+    });
+
+    if (!existingCartItem) {
+      throw new Error("Product not found in the cart.");
+    }
+
+    // Remove the product from the cart by deleting the record in the cartProduct table
     await prisma.cartProduct.delete({
       where: {
         cart_id_product_id: {
-          cart_id: cartId,
+          cart_id: cart.id,
           product_id: productId,
         },
       },
     });
+
+    // Optionally, you can adjust the stock of the product after removing it from the cart
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (product) {
+      // Adjust stock as needed, add back the quantity if the product is removed from the cart
+      await prisma.product.update({
+        where: { id: productId },
+        data: { remaining: product.remaining + existingCartItem.quantity },
+      });
+    }
+
+    // Return success response
     return NextResponse.json({ message: "Item removed from cart" });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to remove item from cart" },
+      { error: (error as Error).message || "Failed to remove item from cart" },
       { status: 500 }
     );
   }

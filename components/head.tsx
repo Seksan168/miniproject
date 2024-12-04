@@ -1,4 +1,16 @@
+"use client";
+
+import { signOut } from "next-auth/react";
+
 export default function Head() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const userName = localStorage.getItem("userName");
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" }); // Redirect to homepage after logout
+    localStorage.removeItem("isLoggedIn");
+  };
+
   return (
     <header className="bg-white">
       <nav
@@ -37,29 +49,53 @@ export default function Head() {
             </svg>
           </button>
         </div>
-        <div className="hidden lg:flex lg:gap-x-12">
+        <div className="hidden lg:flex gap-x-12 px-52">
           <a
             href="/management"
-            className="text-sm/6 font-semibold text-gray-900"
+            className="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
           >
             Features
           </a>
           <a
             href="/maketplace"
-            className="text-sm/6 font-semibold text-gray-900"
+            className="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
           >
             Marketplace
           </a>
-          <a href="/cart" className="text-sm/6 font-semibold text-gray-900">
+          <a
+            href="/cart"
+            className="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+          >
             Cart
           </a>
         </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="/login" className="text-sm/6 font-semibold text-gray-900">
-            Log in <span aria-hidden="true">&rarr;</span>
-          </a>
-        </div>
+
+        {isLoggedIn ? (
+          <div className="flex items-center space-x-4 ml-auto">
+            <img
+              src={"https://cdn-icons-png.flaticon.com/512/6596/6596121.png"} // Fallback to a default avatar if no image
+              alt="User Avatar"
+              className="h-10 w-10 rounded-full object-cover border-2 border-indigo-600"
+            />
+            <span className="font-semibold text-gray-900">{userName}</span>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-full transition-colors"
+            >
+              Log out
+            </button>
+          </div>
+        ) : (
+          <div className="hidden lg:flex ml-auto">
+            <a
+              href="/login"
+              className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+            >
+              Log in <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        )}
       </nav>
     </header>
-  ); // JSX
+  );
 }

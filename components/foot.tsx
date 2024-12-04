@@ -4,7 +4,7 @@ export default function Foot() {
       <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
         © 2023{" "}
         <a href="https://flowbite.com/" className="hover:underline">
-          Prince of Songkla University™
+          Aiilab™
         </a>
         . All Rights Reserved.
       </span>

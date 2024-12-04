@@ -2,10 +2,11 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
   const { data: session, status } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -15,6 +16,8 @@ export default function Profile() {
 
     // When authenticated and session exists, store user details in localStorage
     if (status === "authenticated" && session?.user?.id) {
+      setIsLoggedIn(true); // Track login state for UI
+      localStorage.setItem("isLoggedIn", "true"); // Store login state
       localStorage.setItem("userId", session.user.id);
       localStorage.setItem("userName", session.user.name);
     }
@@ -23,6 +26,7 @@ export default function Profile() {
     return () => {
       localStorage.removeItem("userId");
       localStorage.removeItem("userName");
+      localStorage.removeItem("isLoggedIn");
     };
   }, [status, session, router]);
 
@@ -30,11 +34,16 @@ export default function Profile() {
   const handleLogout = () => {
     signOut({ callbackUrl: "/" }); // Redirect to homepage after logout
     // Optionally, clear localStorage immediately after sign-out
+    localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userId");
     localStorage.removeItem("userName");
   };
 
-  // When after loading success and have session, show profile
+  // When authenticated, show profile
+  if (status === "loading") {
+    return <p>Loading...</p>; // Show loading message during authentication status check
+  }
+
   return (
     status === "authenticated" &&
     session.user && (

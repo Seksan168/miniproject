@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { set } from "zod";
 
 // Type definition for cart items
 interface CartItem {
@@ -17,7 +19,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<any[]>([]);
   const userId = localStorage.getItem("userId");
-
+  const [cart_id, setCartId] = useState<number | null>(null);
   // Fetch cart and product data
   useEffect(() => {
     const fetchCartAndProducts = async () => {
@@ -40,6 +42,7 @@ export default function Page() {
             }));
 
             setCartItems(cartItems || []);
+            setCartId(cartData[0]?.id);
           }
         }
 
@@ -75,41 +78,96 @@ export default function Page() {
     }));
 
     try {
-      // Update the quantity on the server
-      const updateResponse = await fetch(`/api/cart?userId=${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          productId,
-          quantity: newQuantity,
-        }),
-      });
-
-      if (updateResponse.ok) {
-        // Re-fetch the updated cart data after successful update
-        const updatedCartResponse = await fetch(`/api/cart?userId=${userId}`, {
-          method: "GET",
+      // Send a PATCH request to update the quantity of the product
+      if (userId) {
+        const updateResponse = await fetch(`/api/cart?userId=${userId}`, {
+          method: "PATCH", // Use PATCH for partial update
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            userId: +userId,
+            productId,
+            quantity: newQuantity,
+          }),
         });
 
-        if (updatedCartResponse.ok) {
-          const updatedCartData = await updatedCartResponse.json();
-          const updatedCartItems = updatedCartData[0]?.products?.map(
-            (product: any) => ({
-              product_id: product.product_id,
-              quantity: product.quantity,
-            })
+        if (updateResponse.ok) {
+          // Re-fetch the updated cart data after the successful update
+          const updatedCartResponse = await fetch(
+            `/api/cart?userId=${userId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
           );
-          setCartItems(updatedCartItems || []);
+
+          if (updatedCartResponse.ok) {
+            const updatedCartData = await updatedCartResponse.json();
+            const updatedCartItems = updatedCartData[0]?.products?.map(
+              (product: any) => ({
+                product_id: product.product_id,
+                quantity: product.quantity,
+              })
+            );
+            toast.success("Quantity updated successfully.");
+            setCartItems(updatedCartItems || []);
+          }
         }
       }
     } catch (error) {
       console.error("Error updating cart:", error);
+    }
+  };
+  // Call the DELETE API to remove an item from the cart
+  const handleRemoveItem = async (cartId: number, productId: number) => {
+    try {
+      const response = await fetch(`/api/cart`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cartId, productId }), // Send cartId and productId
+      });
+
+      if (response.ok) {
+        // Update local state by removing the item from the cart
+        setCartItems((prevItems) =>
+          prevItems.filter((item) => item.product_id !== productId)
+        );
+        toast.success("Item removed from cart.");
+      } else {
+        Error("Failed to remove item from cart.");
+      }
+    } catch (error) {
+      Error("An error occurred while removing the item.");
+    }
+  };
+
+  //handle checkout
+  const handleCheckout = async (cartId: number) => {
+    try {
+      const response = await fetch(`/api/cart/checkout`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cartId }), // Send the cart ID
+      });
+
+      if (response.ok) {
+        // Show success toast
+        toast.success("Your order has been checked out!");
+        setCartItems([]);
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to checkout: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      toast.error("An error occurred while checking out.");
     }
   };
   // Calculate the total price
@@ -192,7 +250,14 @@ export default function Page() {
                           />
                         </form>
 
-                        <button className="text-gray-600 transition hover:text-red-600">
+                        <button
+                          className="text-gray-600 transition hover:text-red-600"
+                          onClick={() => {
+                            if (cart_id !== null) {
+                              handleRemoveItem(cart_id, cartItem.product_id);
+                            }
+                          }}
+                        >
                           <span className="sr-only">Remove item</span>
 
                           <svg
@@ -226,12 +291,14 @@ export default function Page() {
                   </dl>
 
                   <div className="flex justify-end">
-                    <a
-                      href="#"
-                      className="block rounded bg-gray-700 px-5 py-3 text-sm text-gray-100 transition hover:bg-gray-600"
-                    >
-                      Checkout
-                    </a>
+                    {cart_id !== null && (
+                      <button
+                        onClick={() => handleCheckout(cart_id)} // Pass the cart ID to the checkout function
+                        className="block rounded bg-blue-600 px-5 py-3 text-sm text-white transition hover:bg-blue-700"
+                      >
+                        Checkout
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

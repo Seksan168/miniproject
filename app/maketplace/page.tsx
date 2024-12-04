@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Product {
   id: number;
   name: string;
   price: number;
   image_url: string;
-  remaining: number;
+  quantity: number;
 }
 
 export default function Page() {
@@ -35,7 +36,7 @@ export default function Page() {
       const data: Product[] = await response.json();
       setProducts(data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products");
     }
   }
 
@@ -52,19 +53,18 @@ export default function Page() {
         body: JSON.stringify({
           userId: myId,
           productId,
-          remaining: 1, // You can make this dynamic if you want a quantity input
+          quantity: 1,
         }),
       });
 
       if (!response.ok) {
+        toast.error("Failed to add product to cart");
         throw new Error("Failed to add product to cart");
       }
-
-      // Handle success (e.g., show a success message or update the UI)
       const data = await response.json();
-      alert(`Product added to cart: ${data.id}`); // You can show a toast or update cart count here
+      toast.success(`Product has been added to cart`);
     } catch (error) {
-      console.error("Error adding product to cart:", error);
+      toast.error("Failed to add product to cart");
     }
   }
 
