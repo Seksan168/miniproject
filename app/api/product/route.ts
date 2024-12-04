@@ -9,6 +9,7 @@ export async function GET() {
         name: true,
         price: true,
         image_url: true,
+        remaining: true,
       },
     });
     return NextResponse.json(products);
@@ -42,7 +43,7 @@ export async function PUT(req: Request) {
     const { id, name, price, image_url, remaining } = await req.json();
     const updatedProduct = await prisma.product.update({
       where: { id },
-      data: { name, price, image_url, remaining },
+      data: { name, price, image_url, remaining }, // Make sure to update remaining here
     });
     return NextResponse.json(updatedProduct);
   } catch (error) {

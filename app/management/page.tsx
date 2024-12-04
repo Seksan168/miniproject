@@ -57,6 +57,7 @@ export default function Page() {
       setName(product.name);
       setPrice(product.price);
       setImageUrl(product.image_url);
+      setRemaining(product.remaining);
     }
   }
 
@@ -65,7 +66,13 @@ export default function Page() {
       const response = await fetch(`/api/product`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editID, name, price, image_url: imageUrl }),
+        body: JSON.stringify({
+          id: editID,
+          name,
+          price,
+          image_url: imageUrl,
+          remaining, // Add remaining here
+        }),
       });
       if (!response.ok) throw new Error("Failed to update product");
       await fetchProducts();
@@ -143,13 +150,14 @@ export default function Page() {
             <label>
               Remaining in stock:
               <input
-                type="text"
+                type="number" // Change to number type
                 value={remaining}
-                onChange={(e) => setRemaining(Number(e.target.value))}
+                onChange={(e) => setRemaining(Number(e.target.value) || 0)} // Ensure it's a number
                 className="mt-1 block rounded border-gray-300 text-sm"
               />
             </label>
           </div>
+
           <div>
             {editID ? (
               <button

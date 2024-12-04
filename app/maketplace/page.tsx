@@ -52,7 +52,7 @@ export default function Page() {
         body: JSON.stringify({
           userId: myId,
           productId,
-          quantity: 1, // You can make this dynamic if you want a quantity input
+          remaining: 1, // You can make this dynamic if you want a quantity input
         }),
       });
 
