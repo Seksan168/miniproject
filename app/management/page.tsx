@@ -1,6 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { z } from "zod";
+
+// Define the validation schema for product data
+const productSchema = z.object({
+  name: z.string().min(1, { message: "Product name is required" }),
+  price: z.number().positive({ message: "Price must be a positive number" }),
+  image_url: z.string().url({ message: "Invalid image URL" }),
+  remaining: z
+    .number()
+    .int()
+    .min(0, { message: "Remaining stock cannot be negative" }),
+});
 
 interface Product {
   id: number;
@@ -17,6 +29,7 @@ export default function Page() {
   const [remaining, setRemaining] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
   const [editID, setEditID] = useState<number | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProducts();
@@ -34,17 +47,33 @@ export default function Page() {
   }
 
   async function addProduct() {
+    // Validate the input data
+    const validationResult = productSchema.safeParse({
+      name,
+      price,
+      image_url: imageUrl,
+      remaining,
+    });
+
+    if (!validationResult.success) {
+      // If validation fails, set the errors state
+      setErrors(validationResult.error.errors.map((err) => err.message));
+      return;
+    }
+
     try {
       const response = await fetch("/api/product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, image_url: imageUrl }),
+        body: JSON.stringify({ name, price, image_url: imageUrl, remaining }),
       });
       if (!response.ok) throw new Error("Failed to add product");
       await fetchProducts();
       setName("");
       setPrice(0);
       setImageUrl("");
+      setRemaining(0);
+      setErrors([]); // Clear errors after successful submission
     } catch (error) {
       console.error(error);
     }
@@ -62,6 +91,21 @@ export default function Page() {
   }
 
   async function updateProduct() {
+    // Validate the input data
+    const validationResult = productSchema.safeParse({
+      id: editID,
+      name,
+      price,
+      image_url: imageUrl,
+      remaining,
+    });
+
+    if (!validationResult.success) {
+      // If validation fails, set the errors state
+      setErrors(validationResult.error.errors.map((err) => err.message));
+      return;
+    }
+
     try {
       const response = await fetch(`/api/product`, {
         method: "PUT",
@@ -81,6 +125,7 @@ export default function Page() {
       setPrice(0);
       setRemaining(0);
       setImageUrl("");
+      setErrors([]); // Clear errors after successful submission
     } catch (error) {
       console.error(error);
     }
@@ -111,6 +156,17 @@ export default function Page() {
             Hi admin! Here you can manage your products.
           </p>
         </header>
+
+        {/* Display validation errors */}
+        {errors.length > 0 && (
+          <div className="bg-red-100 text-red-700 p-2 rounded">
+            <ul>
+              {errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-8">
           <div>
@@ -150,9 +206,9 @@ export default function Page() {
             <label>
               Remaining in stock:
               <input
-                type="number" // Change to number type
+                type="number"
                 value={remaining}
-                onChange={(e) => setRemaining(Number(e.target.value) || 0)} // Ensure it's a number
+                onChange={(e) => setRemaining(Number(e.target.value) || 0)}
                 className="mt-1 block rounded border-gray-300 text-sm"
               />
             </label>
