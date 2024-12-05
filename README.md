@@ -4,7 +4,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
+
 ```bash
+#for install depen
+npm i
+#for develop
 npm run dev
 # or
 yarn dev
@@ -13,6 +17,16 @@ pnpm dev
 # or
 bun dev
 ```
+Once the project is set up, install the required dependencies for Prisma and NextAuth (for user authentication).
+```
+npm install prisma @prisma/client next-auth
+
+npm install prisma --save-dev
+npx prisma init
+
+```
+
+
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
