@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
     const { id, name, price, image_url, remaining } = await req.json();
     const updatedProduct = await prisma.product.update({
       where: { id },
-      data: { name, price, image_url, remaining }, // Make sure to update remaining here
+      data: { name, price, image_url, remaining },
     });
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -53,16 +53,28 @@ export async function PUT(req: Request) {
     );
   }
 }
-
 // DELETE handler
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json();
+    // Extract the product ID from the URL
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop(); // Assuming the URL is like /api/products/{id}
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Product ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Delete the product by ID
     await prisma.product.delete({
-      where: { id },
+      where: { id: parseInt(id, 10) },
     });
+
     return NextResponse.json({}, { status: 204 });
   } catch (error) {
+    console.error(error); // Log the error for debugging purposes
     return NextResponse.json(
       { error: "Failed to delete product" },
       { status: 500 }

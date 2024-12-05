@@ -119,28 +119,32 @@ export default function Page() {
           remaining, // Add remaining here
         }),
       });
-      if (!response.ok) toast.error("Failed to update product");
-      throw new Error("Failed to update product");
+      if (!response.ok) {
+        console.log("Failed to update product", response);
+      }
       await fetchProducts();
       setEditID(null);
       setName("");
       setPrice(0);
       setRemaining(0);
       setImageUrl("");
-      setErrors([]); // Clear errors after successful submission
+      setErrors([]);
+      toast.success("Product updated successfully");
     } catch (error) {
-      toast.error("Failed to update product");
+      console.log("Failed to update product", error);
     }
   }
-
   async function deleteProduct(id: number) {
     try {
-      const response = await fetch(`/api/product`, {
+      const response = await fetch(`/api/product/${id}`, {
+        // Pass ID in the URL path
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
       });
+
       if (!response.ok) throw new Error("Failed to delete product");
+
+      // Optionally, call fetchProducts or any function to refresh your data
       await fetchProducts();
     } catch (error) {
       toast.error("Failed to delete product");
