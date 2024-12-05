@@ -47,20 +47,39 @@ export default function Profile() {
   return (
     status === "authenticated" &&
     session.user && (
-      <div className="flex h-screen items-center justify-center">
-        <div className="bg-white p-6 rounded-md shadow-md">
-          <p>
-            Welcome, <b>{session.user.name}!</b>
-          </p>
-          <p>Email: {session.user.email}</p>
-          <p>Role: {session.user.role}</p>
-          <p>ID: {session.user.id}</p>
-          <button
-            onClick={handleLogout}
-            className="w-full bg-blue-500 text-white py-2 rounded"
-          >
-            Logout
-          </button>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow-xl max-w-sm w-full space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-800 text-center">
+            Welcome, <span className="text-blue-600">{session.user.name}!</span>
+          </h2>
+          <p className="text-gray-600 text-center">Your account details:</p>
+
+          <div className="space-y-2">
+            <p className="text-gray-800">
+              <strong>Email:</strong> {session.user.email}
+            </p>
+            <p className="text-gray-800">
+              <strong>Role:</strong> {session.user.role}
+            </p>
+            <p className="text-gray-800">
+              <strong>ID:</strong> {session.user.id}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <a
+              href="/maketplace"
+              className="block w-full text-center bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-200"
+            >
+              Go to Marketplace
+            </a>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-center bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-200"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     )

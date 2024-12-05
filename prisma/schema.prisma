@@ -11,18 +11,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  email     String   @unique
-  password  String
-  image     String?
-  role      String   @default("member") // Add a role field
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  name           String?
+  email          String   @unique
+  emailVerified  DateTime?  // This field should exist
+  image          String?
+  password       String?
+  role           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  cart           Cart?
+  accounts       Account[]
+}
 
-  cart Cart?
+model Account {
+  id                 String  @id @default(cuid())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  
+  access_token       String?  
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 model Product {
   id        Int      @id @default(autoincrement())

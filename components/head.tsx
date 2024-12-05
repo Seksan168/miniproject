@@ -18,11 +18,11 @@ export default function Head() {
         aria-label="Global"
       >
         <div className="flex lg:flex-1">
-          <a href="#" className="-m-1.5 p-1.5">
+          <a href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">Your Company</span>
             <img
               className="h-8 w-auto"
-              src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+              src="https://logo-icons.com/cdn/shop/files/291-logo-1711991296.916.svg?v=1712759714"
               alt=""
             />
           </a>
@@ -54,7 +54,7 @@ export default function Head() {
             href="/management"
             className="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
           >
-            Features
+            Product Management
           </a>
           <a
             href="/maketplace"
@@ -73,7 +73,7 @@ export default function Head() {
         {isLoggedIn ? (
           <div className="flex items-center space-x-4 ml-auto">
             <img
-              src={"https://cdn-icons-png.flaticon.com/512/6596/6596121.png"} // Fallback to a default avatar if no image
+              src={"https://cdn-icons-png.flaticon.com/512/6596/6596121.png"}
               alt="User Avatar"
               className="h-10 w-10 rounded-full object-cover border-2 border-indigo-600"
             />
